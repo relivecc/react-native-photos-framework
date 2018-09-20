@@ -1,3 +1,5 @@
+This is a fork of `react-native-photos-framework`. Needed functionality to get a file url of the video portion of live photos.
+
 # react-native-photos-framework [![Build Status](https://travis-ci.org/olofd/react-native-photos-framework.svg?branch=master)](https://travis-ci.org/olofd/react-native-photos-framework) [![npm version](https://badge.fury.io/js/react-native-photos-framework.svg)](https://badge.fury.io/js/react-native-photos-framework) [![Beerpay](https://beerpay.io/olofd/react-native-photos-framework/badge.svg?style=beer)](https://beerpay.io/olofd/react-native-photos-framework)
 
 ### Example project
