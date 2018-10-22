@@ -159,7 +159,7 @@
         if(mimeTypeCString != nil) {
             mimeType = (__bridge NSString *)(mimeTypeCString);
         }
-        [self videoUrlForLivePhotoAsset:asset andVideoResource:resourceMetadata withCompletionBlock:^(NSURL *url) {
+        [self videoUrlForLivePhotoAsset:asset withCompletionBlock:^(NSURL *url) {
             [arrayWithResourcesMetadata addObject:@{
                                                     @"originalFilename" : resourceMetadata.originalFilename,
                                                     @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
@@ -178,8 +178,8 @@
     }
 }
 
-+(void)videoUrlForLivePhotoAsset:(PHAsset*)asset andVideoResource:(PHAssetResource *)videoResource withCompletionBlock:(void (^)(NSURL* url))completionBlock{
-    if(![asset isKindOfClass:[PHAsset class]] || videoResource.type != PHAssetResourceTypePairedVideo){
++(void)videoUrlForLivePhotoAsset:(PHAsset*)asset withCompletionBlock:(void (^)(NSURL* url))completionBlock{
+    if(![asset isKindOfClass:[PHAsset class]]){
         return completionBlock(nil);
     }
     NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
@@ -188,11 +188,28 @@
     PHLivePhotoRequestOptions* options = [PHLivePhotoRequestOptions new];
     options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
     options.networkAccessAllowed = YES;
+
     [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:[UIScreen mainScreen].bounds.size contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-        if(livePhoto){
-            NSError *err;
-            if ([fileUrl checkResourceIsReachableAndReturnError:&err] == NO) {
+        if (livePhoto){
+            // Check if the new livephoto asset has a video part.
+            NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+            PHAssetResource* videoResource = nil;
+            for(PHAssetResource* resource in assetResources){
+                if (resource.type == PHAssetResourceTypePairedVideo) {
+                    videoResource = resource;
+                    break;
+                }
+            }
+            
+            // If we already have a video at the path, we can return that one.
+            if ([[NSFileManager defaultManager] fileExistsAtPath:[fileUrl path]]) {
+                completionBlock(fileUrl);
+                return;
+            }
+            
+            if (videoResource) {
                 [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
+                    NSLog(@"ERROR: %@", error.description);
                     if(!error){
                         completionBlock(fileUrl);
                     } else {
@@ -200,12 +217,25 @@
                     }
                 }];
             } else {
-                completionBlock(fileUrl);
+                completionBlock(nil);
             }
         } else {
             completionBlock(nil);
         }
     }];
+
+//
+//    options.progressHandler = ^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+//        if (progress == 1.0) {
+//
+//        }
+//
+//        if (error) {
+//            completionBlock(nil);
+//        }
+//    };
+    
+
 }
 
 +(void)extendAssetDictWithPhotoAssetEditingMetadata:(NSMutableDictionary *)dictToExtend andPHAsset:(PHAsset *)asset andCompletionBlock:(void(^)(NSMutableDictionary * dict))completeBlock  {
