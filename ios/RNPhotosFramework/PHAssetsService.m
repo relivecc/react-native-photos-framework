@@ -209,7 +209,6 @@
             
             if (videoResource) {
                 [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
-                    NSLog(@"ERROR: %@", error.description);
                     if(!error){
                         completionBlock(fileUrl);
                     } else {
