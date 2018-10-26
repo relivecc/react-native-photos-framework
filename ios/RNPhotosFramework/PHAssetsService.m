@@ -58,7 +58,7 @@
     return [PHAsset fetchAssetsWithOptions:options];
 }
 
-+(void) assetsArrayToUriArray:(NSArray<id> *)assetsArray andincludeMetadata:(BOOL)includeMetadata andIncludeAssetResourcesMetadata:(BOOL)includeResourcesMetadata withCompletionBlock:(void (^)(NSArray<NSDictionary *> *arr))completionBlock{
++(NSArray<NSDictionary *> *) assetsArrayToUriArray:(NSArray<id> *)assetsArray andincludeMetadata:(BOOL)includeMetadata andIncludeAssetResourcesMetadata:(BOOL)includeResourcesMetadata{
     RCT_PROFILE_BEGIN_EVENT(0, @"-[RCTCameraRollRNPhotosFrameworkManager assetsArrayToUriArray", nil);
 
     NSMutableArray *uriArray = [NSMutableArray arrayWithCapacity:assetsArray.count];
@@ -97,6 +97,7 @@
         
         [uriArray addObject:responseDict];
     }
+    return uriArray;
 }
 
 +(NSMutableDictionary *)extendAssetDictWithAssetMetadata:(NSMutableDictionary *)dictToExtend andPHAsset:(PHAsset *)asset {
