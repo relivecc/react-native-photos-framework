@@ -148,13 +148,11 @@ RCT_EXPORT_METHOD(getAssets:(NSDictionary *)params
     [self prepareAssetsForDisplayWithParams:params andAssets:assets];
     NSInteger assetCount = assetsFetchResult.count;
     BOOL includesLastAsset = assetCount == 0 || endIndex >= (assetCount -1);
-    [PHAssetsService assetsArrayToUriArray:assets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-        return resolve(@{
-                         @"assets" : arr,
-                         @"includesLastAsset" : @(includesLastAsset)
-                         });
-        RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
-    }];
+    return resolve(@{
+                     @"assets" : [PHAssetsService assetsArrayToUriArray:assets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata],
+                     @"includesLastAsset" : @(includesLastAsset)
+                     });
+    RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
 }
 
 RCT_EXPORT_METHOD(getAssetsWithIndecies:(NSDictionary *)params
@@ -167,12 +165,12 @@ RCT_EXPORT_METHOD(getAssetsWithIndecies:(NSDictionary *)params
     PHFetchResult<PHAsset *> *assetsFetchResult = [PHAssetsService getAssetsForParams:params];
     NSArray<PHAssetWithCollectionIndex *> *assets = [PHAssetsService getAssetsForFetchResult:assetsFetchResult atIndecies:[RCTConvert NSArray:params[@"indecies"]]];
     [self prepareAssetsForDisplayWithParams:params andAssets:assets];
-    [PHAssetsService assetsArrayToUriArray:assets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-        resolve(@{
-                  @"assets": arr,
-                  });
-    }];
+    resolve(@{
+              @"assets" : [PHAssetsService assetsArrayToUriArray:assets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata],
+              });
 }
+
+
 
 /*
  DeleteAssets
@@ -225,12 +223,10 @@ RCT_EXPORT_METHOD(getAssetsResourcesMetadata:(NSArray<NSString *> *)arrayWithLoc
 {
     PHFetchResult<PHAsset *> * arrayWithAssets = [PHAssetsService getAssetsFromArrayOfLocalIdentifiers:arrayWithLocalIdentifiers];
     NSMutableDictionary<NSString *, NSDictionary *> *dictWithMetadataObjs = [NSMutableDictionary dictionaryWithCapacity:arrayWithAssets.count];
-        [arrayWithAssets enumerateObjectsUsingBlock:^(PHAsset * _Nonnull asset, NSUInteger idx, BOOL * _Nonnull stop) {
-            [PHAssetsService extendAssetDictWithAssetResourcesMetadata:[NSMutableDictionary new] andPHAsset:asset withCompletionBlock:^(NSMutableDictionary *dict) {
-                [dictWithMetadataObjs setObject:dict forKey:asset.localIdentifier];
-                resolve(dictWithMetadataObjs);
-            }];
-        }];
+    [arrayWithAssets enumerateObjectsUsingBlock:^(PHAsset * _Nonnull asset, NSUInteger idx, BOOL * _Nonnull stop) {
+        [dictWithMetadataObjs setObject:[PHAssetsService extendAssetDictWithAssetResourcesMetadata:[NSMutableDictionary new] andPHAsset:asset] forKey:asset.localIdentifier];
+    }];
+    resolve(dictWithMetadataObjs);
 }
 
 
@@ -347,8 +343,6 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
     NSString *progressEventId = [RCTConvert NSString:events[@"onSaveAssetsToFileProgress"]];
     NSString *cancellationEventId = [RCTConvert NSString:events[@"onCancellationTokenCreated"]];
     
-   // [self sendEventWithName:@"onCancellationTokenCreated" body:@{@"id" : cancellationEventId, @"data" : arrayWithProgress}];
-
     if(progressEventId != nil) {
         arrayWithProgress = [NSMutableArray arrayWithCapacity:media.count];
         for(int i = 0; i < media.count;i++) {
@@ -395,6 +389,109 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
     }];
 }
 
+RCT_EXPORT_METHOD(saveLivePhotoToDisk:saveAssetsToDisk:(NSDictionary *)params
+                                      resolve:(RCTPromiseResolveBlock)resolve
+                                      reject:(RCTPromiseRejectBlock)reject)
+{
+    PHSaveAssetFileRequest *photo = [RCTConvert PHSaveAssetFileRequest:params[@"photo"]];
+    
+    if (photo == nil) {
+        return resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+    }
+    
+    PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[photo.localIdentifier] options:nil];
+    
+    if (assets.count == 0) {
+        return resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+    }
+    
+    PHAsset *asset = assets[0];
+    
+    PHLivePhotoRequestOptions* options = [PHLivePhotoRequestOptions new];
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+    options.networkAccessAllowed = YES;
+    
+    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:[UIScreen mainScreen].bounds.size contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+        if (!livePhoto) {
+            resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+        }
+        
+        // Check if the new livephoto asset has a video part.
+        NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+        PHAssetResource* videoResource = nil;
+        for(PHAssetResource* resource in assetResources){
+            if (resource.type == PHAssetResourceTypePairedVideo) {
+                videoResource = resource;
+                break;
+            }
+        }
+        
+        if (!videoResource) {
+            resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+        }
+        
+        NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
+        NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+
+        
+        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
+            
+            resolve(@{
+                      @"localIdentifier": asset.localIdentifier,
+                      @"fileUrl": fileUrl,
+                      @"error": error != nil ? [error localizedDescription] : [NSNull null]
+                      });
+        }];
+    }];
+}
+
+//+(void)videoUrlForLivePhotoAsset:(PHAsset*)asset withCompletionBlock:(void (^)(NSURL* url))completionBlock{
+//    if(![asset isKindOfClass:[PHAsset class]]){
+//        return completionBlock(nil);
+//    }
+//    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
+//    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+//
+//    PHLivePhotoRequestOptions* options = [PHLivePhotoRequestOptions new];
+//    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+//    options.networkAccessAllowed = YES;
+//
+//    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:[UIScreen mainScreen].bounds.size contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+//        if (livePhoto){
+//            // Check if the new livephoto asset has a video part.
+//            NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+//            PHAssetResource* videoResource = nil;
+//            for(PHAssetResource* resource in assetResources){
+//                if (resource.type == PHAssetResourceTypePairedVideo) {
+//                    videoResource = resource;
+//                    break;
+//                }
+//            }
+//
+//            // If we already have a video at the path, we can return that one.
+//            if ([[NSFileManager defaultManager] fileExistsAtPath:[fileUrl path]]) {
+//                completionBlock(fileUrl);
+//                return;
+//            }
+//
+//            if (videoResource) {
+//                [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
+//                    if(!error){
+//                        completionBlock(fileUrl);
+//                    } else {
+//                        completionBlock(nil);
+//                    }
+//                }];
+//            } else {
+//                completionBlock(nil);
+//            }
+//        } else {
+//            completionBlock(nil);
+//        }
+//    }];
+//}
+
+
 -(void) saveAssetsToFileMany:(NSArray<PHSaveAssetFileRequest *> *)saveFileRequests
             andCompleteBLock:(assetsFileSaveCompleteBlock)completeBlock andProgressBlock:(fileDownloadExtendedPrograessBlockSimple)progressBlock {
     
@@ -432,57 +529,57 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
 
 -(void) writeImageToFile:(PHSaveAssetFileRequest *)fileRequest andCompleteBLock:(assetFileSaveOperationBlock)completeBlock andProgressBlock:(fileDownloadProgressBlock)progressBlock {
     [self loadImageWithURLRequest:fileRequest.uri
-                                             clipped:YES
-                                          resizeMode:RCTResizeModeStretch
-                                    progressBlock:^(int64_t progress, int64_t total) {
-                                           return progressBlock(progress, total);
-                                       }
-                                     partialLoadBlock:nil
-                                     completionBlock:^(NSError *error, UIImage *loadedImage) {
-                                         if (error) {
-                                             return completeBlock(NO, error, fileRequest.localIdentifier, nil);
-                                         }
-                                         
-                                         if(fileRequest.postProcessOptions != nil) {
-                                             float width = [RCTConvert float:fileRequest.postProcessOptions[@"width"]];
-                                             float height = [RCTConvert float:fileRequest.postProcessOptions[@"height"]];
-                                             float quality = [RCTConvert float:fileRequest.postProcessOptions[@"quality"]];
-                                             float rotation = [RCTConvert float:fileRequest.postProcessOptions[@"rotation"]];
-                                             
-                                             if(width < 0.1) {
-                                                 width = loadedImage.size.width;
-                                             }
-                                             if(height < 0.1) {
-                                                 height = loadedImage.size.height;
-                                             }
-                                             if(quality < 0.1) {
-                                                 quality = 100;
-                                             }
-                                             
-                                             NSString *format = [RCTConvert NSString:fileRequest.postProcessOptions[@"format"]];
-                                             if(![format isEqualToString:@"JPEG"] || ![format isEqualToString:@"PNG"]) {
-                                                 format = @"JPEG";
-                                             }
-                                             return [RNPFImageResizer createResizedImage:loadedImage width:width height:height format:format quality:quality rotation:rotation outputPath:fileRequest.dir fileName:fileRequest.fileName andCompleteBLock:^(NSString *error, NSString *path) {
-                                                 if(error != nil) {
-                                                     return completeBlock(NO, nil, fileRequest.localIdentifier, nil);
-                                                 }
-                                                 progressBlock(100, 100);
-                                                 return completeBlock(YES, nil,fileRequest.localIdentifier, path);
-                                             }];
-                                         }
-                                         
-                                         
-                                         NSString *fullFileName = [fileRequest.dir stringByAppendingPathComponent:fileRequest.fileName];
-                                         
-                                         NSData * binaryImageData = UIImagePNGRepresentation(loadedImage);
-                                         
-                                         BOOL success = [binaryImageData writeToFile:fullFileName atomically:YES];
-                                         if(success) {
-                                             return completeBlock(YES, nil, fileRequest.localIdentifier, fullFileName);
-                                         }
-                                         
-                                     } andOptions:[RCTConvert NSDictionary:fileRequest.loadOptions]];
+                          clipped:YES
+                       resizeMode:RCTResizeModeStretch
+                    progressBlock:^(int64_t progress, int64_t total) {
+                        return progressBlock(progress, total);
+                    }
+                 partialLoadBlock:nil
+                  completionBlock:^(NSError *error, UIImage *loadedImage) {
+                      if (error) {
+                          return completeBlock(NO, error, fileRequest.localIdentifier, nil);
+                      }
+                      
+                      if(fileRequest.postProcessOptions != nil) {
+                          float width = [RCTConvert float:fileRequest.postProcessOptions[@"width"]];
+                          float height = [RCTConvert float:fileRequest.postProcessOptions[@"height"]];
+                          float quality = [RCTConvert float:fileRequest.postProcessOptions[@"quality"]];
+                          float rotation = [RCTConvert float:fileRequest.postProcessOptions[@"rotation"]];
+                          
+                          if(width < 0.1) {
+                              width = loadedImage.size.width;
+                          }
+                          if(height < 0.1) {
+                              height = loadedImage.size.height;
+                          }
+                          if(quality < 0.1) {
+                              quality = 100;
+                          }
+                          
+                          NSString *format = [RCTConvert NSString:fileRequest.postProcessOptions[@"format"]];
+                          if(![format isEqualToString:@"JPEG"] || ![format isEqualToString:@"PNG"]) {
+                              format = @"JPEG";
+                          }
+                          return [RNPFImageResizer createResizedImage:loadedImage width:width height:height format:format quality:quality rotation:rotation outputPath:fileRequest.dir fileName:fileRequest.fileName andCompleteBLock:^(NSString *error, NSString *path) {
+                              if(error != nil) {
+                                  return completeBlock(NO, nil, fileRequest.localIdentifier, nil);
+                              }
+                              progressBlock(100, 100);
+                              return completeBlock(YES, nil,fileRequest.localIdentifier, path);
+                          }];
+                      }
+                      
+                      
+                      NSString *fullFileName = [fileRequest.dir stringByAppendingPathComponent:fileRequest.fileName];
+                      
+                      NSData * binaryImageData = UIImagePNGRepresentation(loadedImage);
+                      
+                      BOOL success = [binaryImageData writeToFile:fullFileName atomically:YES];
+                      if(success) {
+                          return completeBlock(YES, nil, fileRequest.localIdentifier, fullFileName);
+                      }
+                      
+                  } andOptions:[RCTConvert NSDictionary:fileRequest.loadOptions]];
 }
 
 -(void) writeVideoToFile:(PHSaveAssetFileRequest *)fileRequest andCompleteBLock:(assetFileSaveOperationBlock)completeBlock andProgressBlock:(fileDownloadProgressBlockSimple)progressBlock {
@@ -501,6 +598,7 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
        NSDictionary * _Nullable info)
      {
          progressBlock(50);
+         
          
          if(fileRequest.postProcessOptions != nil) {
              videoExporter = [PHVideoExporter new];
@@ -523,9 +621,9 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
                  }
              }
              NSURL *fileURL = [NSURL fileURLWithPath:fullFileName];
-
+             
              AVURLAsset *avurlasset = (AVURLAsset*) avasset;
-
+             
              if ([[NSFileManager defaultManager] copyItemAtURL:avurlasset.URL
                                                          toURL:fileURL
                                                          error:&error]) {
@@ -582,9 +680,9 @@ RCT_EXPORT_METHOD(createAssets:(NSDictionary *)params
         BOOL includeResourcesMetadata = [RCTConvert BOOL:params[@"includeResourcesMetadata"]];
         
         PHFetchResult<PHAsset *> *newAssets = [PHAssetsService getAssetsFromArrayOfLocalIdentifiers:arrayWithLocalIdentfiers];
-        [PHAssetsService assetsArrayToUriArray:(NSArray<id> *)newAssets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-                return resolve(@{@"assets" : arr, @"success" : @(YES) });
-        }];
+        NSArray<NSDictionary *> *assetResponse = [PHAssetsService assetsArrayToUriArray:(NSArray<id> *)newAssets andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata];
+        return resolve(@{@"assets" : assetResponse, @"success" : @(YES) });
+        
     } andProgressBlock:^(NSString *uri, int index, int64_t progress, int64_t total) {
         if(hasListeners && progressEventId != nil) {
             @synchronized(arrayWithProgress)
@@ -885,12 +983,12 @@ RCT_EXPORT_METHOD(removeAssetsFromAlbum:(NSDictionary *)params
 }
 
 -(RCTImageLoaderCancellationBlock) loadImageWithURLRequest:(NSURLRequest *)imageURLRequest
-                 clipped:(BOOL)clipped
-              resizeMode:(RCTResizeMode)resizeMode
-           progressBlock:(RCTImageLoaderProgressBlock)progressBlock
-        partialLoadBlock:(RCTImageLoaderPartialLoadBlock)partialLoadBlock
-         completionBlock:(RCTImageLoaderCompletionBlock)completionBlock
-      andOptions:(NSDictionary *)params {
+                                                   clipped:(BOOL)clipped
+                                                resizeMode:(RCTResizeMode)resizeMode
+                                             progressBlock:(RCTImageLoaderProgressBlock)progressBlock
+                                          partialLoadBlock:(RCTImageLoaderPartialLoadBlock)partialLoadBlock
+                                           completionBlock:(RCTImageLoaderCompletionBlock)completionBlock
+                                                andOptions:(NSDictionary *)params {
     
     CGSize size = CGSizeZero;
     float width = [RCTConvert float:params[@"width"]];
@@ -908,13 +1006,13 @@ RCT_EXPORT_METHOD(removeAssetsFromAlbum:(NSDictionary *)params
     components.queryItems = [self parseParamsToImageLoaderQueryOptions:params];
     
     return [self.bridge.imageLoader loadImageWithURLRequest:[NSURLRequest requestWithURL:components.URL]
-                                                size:size
-                                               scale:scale
-                                             clipped:clipped
-                                          resizeMode:resizeMode
-                                       progressBlock:progressBlock
-                                    partialLoadBlock:partialLoadBlock
-                                     completionBlock:completionBlock];
+                                                       size:size
+                                                      scale:scale
+                                                    clipped:clipped
+                                                 resizeMode:resizeMode
+                                              progressBlock:progressBlock
+                                           partialLoadBlock:partialLoadBlock
+                                            completionBlock:completionBlock];
 }
 
 -(NSArray<NSURLQueryItem *> *)parseParamsToImageLoaderQueryOptions:(NSDictionary *)params {

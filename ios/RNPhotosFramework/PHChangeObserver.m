@@ -27,23 +27,25 @@
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance {
     if(changeInstance != nil) {
-        dispatch_group_t group = dispatch_group_create();
+        
         NSMutableDictionary<NSString *, PHCachedFetchResult *> *previousFetches = [[PHCache sharedPHCache] fetchResults];
-
+        
         [previousFetches enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull uuid, PHCachedFetchResult * _Nonnull cachedFetchResult, BOOL * _Nonnull stop) {
-
+            
             PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:cachedFetchResult.fetchResult];
-
+            
             if(changeDetails != nil) {
+                
+                
                 BOOL trackInsertsAndDeletes = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"trackInsertsAndDeletes"]];
                 BOOL trackChanges = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"trackChanges"]];
-
+                
                 NSMutableArray *removedLocalIdentifiers = (NSMutableArray *)[NSNull null];
                 NSArray *removedIndexes = (NSArray *)[NSNull null];
-
+                
                 NSMutableArray *insertedObjects = (NSMutableArray *)[NSNull null];
                 NSArray *insertedIndexes = (NSArray *)[NSNull null];
-
+                
                 if(trackInsertsAndDeletes) {
                     removedLocalIdentifiers = [NSMutableArray arrayWithCapacity:changeDetails.removedObjects.count];
                     removedIndexes = [self indexSetToReturnableArray:changeDetails.removedIndexes];
@@ -56,8 +58,8 @@
                                                                  }];
                         }
                     }
-
-
+                    
+                    
                     insertedObjects = [NSMutableArray arrayWithCapacity:changeDetails.insertedObjects.count];
                     insertedIndexes = [self indexSetToReturnableArray:changeDetails.insertedIndexes];
                     for(int i = 0; i < [changeDetails.insertedIndexes count];i++) {
@@ -71,33 +73,29 @@
                                                          @"obj" : insertedObject
                                                          }];
                         }
-
+                        
                         if([object isKindOfClass:[PHAsset class]]) {
                             BOOL includeMetadata = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"includeMetadata"]];
                             BOOL includeResourcesMetadata = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"includeResourcesMetadata"]];
-                            dispatch_group_enter(group);
-                            [PHAssetsService assetsArrayToUriArray:@[object] andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-                                NSDictionary *insertedObject = [arr objectAtIndex:0];
-                                NSNumber *collectionIndex = [insertedIndexes objectAtIndex:i];
-                                NSMutableDictionary *mutableInsertedDict = [insertedObject mutableCopy];
-                                [mutableInsertedDict setObject:collectionIndex forKey:@"collectionIndex"];
-                                [insertedObjects addObject:@{
-                                                             @"index" : collectionIndex,
-                                                             @"obj" : mutableInsertedDict
-                                                             }];
-                                dispatch_group_leave(group);
-                            }];
-                            dispatch_group_wait(group,  DISPATCH_TIME_FOREVER);
+                            
+                            NSDictionary *insertedObject = [[PHAssetsService assetsArrayToUriArray:@[object] andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata] objectAtIndex:0];
+                            NSNumber *collectionIndex = [insertedIndexes objectAtIndex:i];
+                            NSMutableDictionary *mutableInsertedDict = [insertedObject mutableCopy];
+                            [mutableInsertedDict setObject:collectionIndex forKey:@"collectionIndex"];
+                            [insertedObjects addObject:@{
+                                                         @"index" : collectionIndex,
+                                                         @"obj" : mutableInsertedDict
+                                                         }];
                         }
                     }
                 }
-
+                
                 NSMutableArray *changedObjects = (NSMutableArray *)[NSNull null];
                 NSArray *changedIndexes = (NSArray *)[NSNull null];
                 if(trackChanges) {
                     changedObjects = [NSMutableArray arrayWithCapacity:changeDetails.changedObjects.count];
                     changedIndexes = [self indexSetToReturnableArray:changeDetails.changedIndexes];
-
+                    
                     for(int i = 0; i < [changeDetails.changedObjects count];i++) {
                         PHObject *object = (PHObject *)[changeDetails.changedObjects objectAtIndex:i];
                         if([object isKindOfClass:[PHCollection class]]) {
@@ -107,31 +105,26 @@
                                                         @"index" : [changedIndexes objectAtIndex:i],
                                                         @"obj" : changedObject
                                                         }];
-
+                            
                         }
-
+                        
                         if([object isKindOfClass:[PHAsset class]]) {
-
+                            
                             BOOL includeMetadata = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"includeMetadata"]];
                             BOOL includeResourcesMetadata = [RCTConvert BOOL:cachedFetchResult.originalFetchParams[@"includeResourcesMetadata"]];
-                            dispatch_group_enter(group);
-                            [PHAssetsService assetsArrayToUriArray:@[object] andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-                                NSDictionary *changedObject = [arr objectAtIndex:0];
-                                NSNumber *collectionIndex = [insertedIndexes objectAtIndex:i];
-                                NSMutableDictionary *mutableChangedDict = [changedObject mutableCopy];
-                                [mutableChangedDict setObject:collectionIndex forKey:@"collectionIndex"];
-                                [changedObjects addObject:@{
-                                                            @"index" : collectionIndex,
-                                                            @"obj" : mutableChangedDict
-                                                            }];
-                                dispatch_group_leave(group);
-                            }];
-                            dispatch_group_wait(group,  DISPATCH_TIME_FOREVER);
+                            NSDictionary *changedObject = [[PHAssetsService assetsArrayToUriArray:@[object] andincludeMetadata:includeMetadata andIncludeAssetResourcesMetadata:includeResourcesMetadata] objectAtIndex:0];
+                            NSNumber *collectionIndex = [changedIndexes objectAtIndex:i];
+                            NSMutableDictionary *mutableChangedDict = [changedObject mutableCopy];
+                            [mutableChangedDict setObject:collectionIndex forKey:@"collectionIndex"];
+                            [changedObjects addObject:@{
+                                                        @"index" : collectionIndex,
+                                                        @"obj" : mutableChangedDict
+                                                        }];
                         }
-
+                        
                     }
                 }
-
+                
                 if(trackInsertsAndDeletes || trackChanges) {
                     NSMutableArray *moves = (NSMutableArray *)[NSNull null];
                     if(changeDetails.hasMoves) {
@@ -141,18 +134,18 @@
                             [moves addObject:@(toIndex)];
                         }];
                     }
-
+                    
                     BOOL hasMoves = ![moves isEqual:[NSNull null]] && moves.count != 0;
-
+                    
                     BOOL shouldNotifyForInsertOrDelete = ((
                                                            (![insertedIndexes isEqual:[NSNull null]] && insertedIndexes.count != 0) ||
                                                            (![removedIndexes isEqual:[NSNull null]] && removedIndexes.count != 0) ||
                                                            hasMoves) && trackInsertsAndDeletes);
-
+                    
                     BOOL shouldNotifyForChange = ((
                                                    (![changedIndexes isEqual:[NSNull null]] && changedIndexes.count != 0) ||
                                                    hasMoves) && trackChanges);
-
+                    
                     if(shouldNotifyForInsertOrDelete || shouldNotifyForChange){
                         if(self.eventEmitter) {
                             [self.eventEmitter sendEventWithName:@"onObjectChange"
@@ -169,18 +162,18 @@
                                                                    @"moves" : moves
                                                                    }];
                         }
-
+                        
                         cachedFetchResult.fetchResult = [changeDetails fetchResultAfterChanges];
                     }
                 }
-
+                
             }
         }];
-
+        
         [self.eventEmitter sendEventWithName:@"onLibraryChange"
-                                                body:@{}];
+                                        body:@{}];
     }
-
+    
 }
 
 -(NSArray *)indexSetToReturnableArray:(NSIndexSet *)inputIndexSet {

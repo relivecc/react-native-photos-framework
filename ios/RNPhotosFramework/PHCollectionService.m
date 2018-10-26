@@ -72,8 +72,8 @@ static id ObjectOrNull(id object)
     PHAssetCollectionType type = [RCTConvert PHAssetCollectionType:typeString];
     PHAssetCollectionSubtype subType = [RCTConvert PHAssetCollectionSubtype:subTypeString];
     PHFetchResult<PHAssetCollection *> *collections = [PHAssetCollection fetchAssetCollectionsWithType:type
-                                                                              subtype:subType
-                                                                              options:fetchOptions];
+                                                                                               subtype:subType
+                                                                                               options:fetchOptions];
     return collections;
 }
 
@@ -98,7 +98,7 @@ static id ObjectOrNull(id object)
     int numberOfPreviewAssets = [RCTConvert int:params[@"previewAssets"]];
     BOOL includeMetadata = [RCTConvert BOOL:params[@"includeMetadata"]];
     BOOL includeResourcesMetadata = [RCTConvert BOOL:params[@"includeResourcesMetadata"]];
-
+    
     NSMutableDictionary *collectionDictionary = [NSMutableDictionary new];
     NSMutableArray *albumsArray = [NSMutableArray arrayWithCapacity:albums.count];
     
@@ -106,7 +106,7 @@ static id ObjectOrNull(id object)
     //Let's set a fetchLimit.
     NSDictionary *fetchOptions = [RCTConvert NSDictionary:params[@"assetFetchOptions"]];
     NSMutableDictionary *assetFetchParams = [[NSMutableDictionary alloc] init];
-
+    
     if(!cacheAssets && countType == RNPFAssetCountTypeEstimated && numberOfPreviewAssets > 0) {
         //If we are not caching the result and the assetCount should only be estimated.
         //We can set a fetchLimit when getting the previewAssets (Small optimization)
@@ -122,7 +122,7 @@ static id ObjectOrNull(id object)
     for(PHCollection *collection in albums)
     {
         NSMutableDictionary *albumDictionary = [self generateAlbumResponseFromCollection:collection numberOfPreviewAssets:numberOfPreviewAssets countType:countType includeMetadata:includeMetadata includeResourcesMetadata:includeResourcesMetadata cacheAssets:cacheAssets assetFetchParams:assetFetchParams];
-            
+        
         [albumsArray addObject:albumDictionary];
         
     }
@@ -133,7 +133,7 @@ static id ObjectOrNull(id object)
 + (NSMutableDictionary *)generateAlbumResponseFromCollection:(PHCollection *)collection numberOfPreviewAssets:(int)numberOfPreviewAssets countType:(RNPFAssetCountType)countType includeMetadata:(BOOL)includeMetadata includeResourcesMetadata:(BOOL)resourcesMetadata cacheAssets:(BOOL)cacheAssets assetFetchParams:(NSDictionary *)assetFetchParams {
     
     NSMutableDictionary *albumDictionary = [NSMutableDictionary new];
-
+    
     if([collection isKindOfClass:[PHAssetCollection class]]) {
         PHAssetCollection *phAssetCollection = (PHAssetCollection *)collection;
         PHAssetCollectionType albumType = [phAssetCollection assetCollectionType];
@@ -180,18 +180,13 @@ static id ObjectOrNull(id object)
             if(numberOfPreviewAssets > 0) {
                 BOOL assetDisplayStartToEnd = [RCTConvert BOOL:assetFetchParams[@"assetDisplayStartToEnd"]];
                 BOOL assetDisplayBottomUp = [RCTConvert BOOL:assetFetchParams[@"assetDisplayBottomUp"]];
-                dispatch_group_t group = dispatch_group_create();
-                dispatch_group_enter(group);
-                [PHAssetsService assetsArrayToUriArray:[PHAssetsService getAssetsForFetchResult:assets startIndex:0 endIndex:(numberOfPreviewAssets - 1) assetDisplayStartToEnd:assetDisplayStartToEnd andAssetDisplayBottomUp:assetDisplayBottomUp] andincludeMetadata:NO andIncludeAssetResourcesMetadata:resourcesMetadata withCompletionBlock:^(NSArray<NSDictionary *> *arr) {
-                    [albumDictionary setObject:arr forKey:@"previewAssets"];
-                    dispatch_group_leave(group);
-                }];
-                dispatch_group_wait(group,  DISPATCH_TIME_FOREVER);
+                NSArray<NSDictionary *> *previewAssets = [PHAssetsService assetsArrayToUriArray:[PHAssetsService getAssetsForFetchResult:assets startIndex:0 endIndex:(numberOfPreviewAssets-1) assetDisplayStartToEnd:assetDisplayStartToEnd andAssetDisplayBottomUp:assetDisplayBottomUp] andincludeMetadata:NO andIncludeAssetResourcesMetadata:resourcesMetadata];
+                [albumDictionary setObject:previewAssets forKey:@"previewAssets"];
             }
             
         }
     }
-
+    
     [albumDictionary setObject:collection.localizedTitle forKey:@"title"];
     [albumDictionary setObject:collection.localIdentifier forKey:@"localIdentifier"];
     
@@ -261,7 +256,7 @@ static id ObjectOrNull(id object)
 +(void) saveImage:(UIImage *)image toAlbum:(NSString *)albumLocalIdentfier andCompleteBLock:(nullable void(^)(BOOL success, NSError *__nullable error, NSString *__nullable localIdentifier))completeBlock {
     __block PHObjectPlaceholder *placeholder;
     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-    
+        
         PHAssetChangeRequest *assetRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
         placeholder = [assetRequest placeholderForCreatedAsset];
         
