@@ -318,7 +318,6 @@
 				TargetAttributes = {
 					632D5ECF1DF19458006A862C = {
 						CreatedOnToolsVersion = 8.1;
-						DevelopmentTeam = 5BEG6QJ94B;
 						ProvisioningStyle = Automatic;
 					};
 					632F8C121DB758E6007E83E1 = {
@@ -414,7 +413,7 @@
 		632D5ED81DF19458006A862C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 5BEG6QJ94B;
+				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/../../react-native/Libraries/Image",
@@ -436,7 +435,7 @@
 		632D5ED91DF19458006A862C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 5BEG6QJ94B;
+				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/../../react-native/Libraries/Image",
