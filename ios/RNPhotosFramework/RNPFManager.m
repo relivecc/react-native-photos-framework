@@ -389,7 +389,7 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
     }];
 }
 
-RCT_EXPORT_METHOD(saveLivePhotoToDisk:localIdentifier:(NSString *)params
+RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
                                       resolve:(RCTPromiseResolveBlock)resolve
                                       reject:(RCTPromiseRejectBlock)reject)
 {
