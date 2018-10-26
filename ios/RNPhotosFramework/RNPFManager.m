@@ -389,31 +389,25 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
     }];
 }
 
-RCT_EXPORT_METHOD(saveLivePhotoToDisk:saveAssetsToDisk:(NSDictionary *)params
+RCT_EXPORT_METHOD(saveLivePhotoToDisk:localIdentifier:(NSString *)params
                                       resolve:(RCTPromiseResolveBlock)resolve
                                       reject:(RCTPromiseRejectBlock)reject)
 {
-    PHSaveAssetFileRequest *photo = [RCTConvert PHSaveAssetFileRequest:params[@"photo"]];
     
-    if (photo == nil) {
-        return resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
-    }
-    
-    PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[photo.localIdentifier] options:nil];
+    PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
     
     if (assets.count == 0) {
-        return resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+        return resolve([NSNull null]);
     }
     
     PHAsset *asset = assets[0];
-    
     PHLivePhotoRequestOptions* options = [PHLivePhotoRequestOptions new];
     options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
     options.networkAccessAllowed = YES;
     
     [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:[UIScreen mainScreen].bounds.size contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
         if (!livePhoto) {
-            resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+            return resolve([NSNull null]);
         }
         
         // Check if the new livephoto asset has a video part.
@@ -427,70 +421,21 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:saveAssetsToDisk:(NSDictionary *)params
         }
         
         if (!videoResource) {
-            resolve(@{@"file" : [NSNull null], @"success" : @((BOOL)false)});
+            return resolve([NSNull null]);
         }
         
         NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
         NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
 
-        
         [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
             
             resolve(@{
                       @"localIdentifier": asset.localIdentifier,
-                      @"fileUrl": fileUrl,
-                      @"error": error != nil ? [error localizedDescription] : [NSNull null]
+                      @"fileUrl": [fileUrl absoluteString],
                       });
         }];
     }];
 }
-
-//+(void)videoUrlForLivePhotoAsset:(PHAsset*)asset withCompletionBlock:(void (^)(NSURL* url))completionBlock{
-//    if(![asset isKindOfClass:[PHAsset class]]){
-//        return completionBlock(nil);
-//    }
-//    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
-//    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-//
-//    PHLivePhotoRequestOptions* options = [PHLivePhotoRequestOptions new];
-//    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-//    options.networkAccessAllowed = YES;
-//
-//    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:[UIScreen mainScreen].bounds.size contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-//        if (livePhoto){
-//            // Check if the new livephoto asset has a video part.
-//            NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
-//            PHAssetResource* videoResource = nil;
-//            for(PHAssetResource* resource in assetResources){
-//                if (resource.type == PHAssetResourceTypePairedVideo) {
-//                    videoResource = resource;
-//                    break;
-//                }
-//            }
-//
-//            // If we already have a video at the path, we can return that one.
-//            if ([[NSFileManager defaultManager] fileExistsAtPath:[fileUrl path]]) {
-//                completionBlock(fileUrl);
-//                return;
-//            }
-//
-//            if (videoResource) {
-//                [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
-//                    if(!error){
-//                        completionBlock(fileUrl);
-//                    } else {
-//                        completionBlock(nil);
-//                    }
-//                }];
-//            } else {
-//                completionBlock(nil);
-//            }
-//        } else {
-//            completionBlock(nil);
-//        }
-//    }];
-//}
-
 
 -(void) saveAssetsToFileMany:(NSArray<PHSaveAssetFileRequest *> *)saveFileRequests
             andCompleteBLock:(assetsFileSaveCompleteBlock)completeBlock andProgressBlock:(fileDownloadExtendedPrograessBlockSimple)progressBlock {
