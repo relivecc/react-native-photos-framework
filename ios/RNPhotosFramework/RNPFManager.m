@@ -389,6 +389,40 @@ RCT_EXPORT_METHOD(saveAssetsToDisk:(NSDictionary *)params
     }];
 }
 
+RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
+    
+    if (assets.count == 0) {
+        return resolve([NSNull null]);
+    }
+    
+    PHAsset *asset = assets[0];
+    
+    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
+    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+    PHAssetResource* videoResource = nil;
+    
+    NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
+    for(PHAssetResource* resource in assetResources) {
+        if (resource.type == PHAssetResourceTypeVideo) {
+            videoResource = resource;
+        }
+    }
+    
+    if (!videoResource) {
+        return resolve([NSNull null]);
+    }
+    [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
+        resolve(@{
+                  @"localIdentifier": asset.localIdentifier,
+                  @"fileUrl": [fileUrl absoluteString],
+                  });
+    }];
+}
+
 RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
                                       resolve:(RCTPromiseResolveBlock)resolve
                                       reject:(RCTPromiseRejectBlock)reject)
