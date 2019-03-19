@@ -405,6 +405,10 @@ class RNPhotosFramework {
   saveLivePhotoToDisk(localIdentifier) {
     return RNPFManager.saveLivePhotoToDisk(localIdentifier);
   }
+
+  saveVideoToDisk(localIdentifier) {
+    return RNPFManager.saveVideoToDisk(localIdentifier);
+  }
 }
 
 export default new RNPhotosFramework();
