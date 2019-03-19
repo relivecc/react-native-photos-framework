@@ -401,8 +401,6 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
     
     PHAsset *asset = assets[0];
     
-    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
-    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
     PHAssetResource* videoResource = nil;
     
     NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
@@ -411,10 +409,12 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
             videoResource = resource;
         }
     }
-    
     if (!videoResource) {
         return resolve([NSNull null]);
     }
+    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
+    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+
     [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
         resolve(@{
                   @"localIdentifier": asset.localIdentifier,
