@@ -424,8 +424,8 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
 }
 
 RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
-                                      resolve:(RCTPromiseResolveBlock)resolve
-                                      reject:(RCTPromiseRejectBlock)reject)
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
 {
     
     PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
@@ -439,7 +439,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
     [options setDeliveryMode:PHImageRequestOptionsDeliveryModeFastFormat];
     [options setNetworkAccessAllowed:YES];
     
-    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:CGSizeZero contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
         
         if (!livePhoto) {
             return resolve([NSNull null]);
@@ -467,23 +467,22 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }
         
-        NSMutableData *buffer = [[NSMutableData alloc] init];
         PHAssetResourceRequestOptions *options = [PHAssetResourceRequestOptions new];
         [options setNetworkAccessAllowed:YES];
         
-        [[PHAssetResourceManager defaultManager] requestDataForAssetResource:videoResource options:options dataReceivedHandler:^(NSData * _Nonnull data) {
-            [buffer appendData:data];
-        } completionHandler:^(NSError * _Nullable error) {
-            if (error != nil) {
-                return resolve([NSNull null]);
-            }
-            
-            if (![buffer writeToURL:fileUrl atomically:true]) {
-                return resolve([NSNull null]);
-            }
-            
-            return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
-        }];
+        
+        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource
+                                                                    toFile:fileUrl
+                                                                   options:options
+                                                         completionHandler:^(NSError * _Nullable error) {
+                                                             if (error) {
+                                                                 //  NSError * err=[NSError errorWithDomain:@"test" code:0 userInfo:nil];
+                                                                 //  reject(@"0",error.description,err);
+                                                                 return resolve([NSNull null]); // TODO: use above?
+                                                             } else {
+                                                                 resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
+                                                             }
+                                                         }];
     }];
 }
 
