@@ -424,8 +424,8 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
 }
 
 RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
-                                      resolve:(RCTPromiseResolveBlock)resolve
-                                      reject:(RCTPromiseRejectBlock)reject)
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
 {
     
     PHFetchResult<PHAsset *> *assets = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
@@ -439,7 +439,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
     [options setDeliveryMode:PHImageRequestOptionsDeliveryModeFastFormat];
     [options setNetworkAccessAllowed:YES];
     
-    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:CGSizeZero contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
         
         if (!livePhoto) {
             return resolve([NSNull null]);
@@ -468,9 +468,10 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         }
         
         NSMutableData *buffer = [[NSMutableData alloc] init];
-        PHAssetResourceRequestOptions *options = [PHAssetResourceRequestOptions new];
+        PHAssetResourceRequestOptions *options = [[PHAssetResourceRequestOptions alloc] init];
         [options setNetworkAccessAllowed:YES];
         
+        // Other option is writeDataForAssetResource
         [[PHAssetResourceManager defaultManager] requestDataForAssetResource:videoResource options:options dataReceivedHandler:^(NSData * _Nonnull data) {
             [buffer appendData:data];
         } completionHandler:^(NSError * _Nullable error) {
@@ -478,6 +479,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
                 return resolve([NSNull null]);
             }
             
+            // Atomically makes sure we only write a file which is complete to prevent referencing to incomplete files.
             if (![buffer writeToURL:fileUrl atomically:true]) {
                 return resolve([NSNull null]);
             }
