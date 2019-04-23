@@ -467,22 +467,25 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }
         
-        PHAssetResourceRequestOptions *options = [PHAssetResourceRequestOptions new];
+        NSMutableData *buffer = [[NSMutableData alloc] init];
+        PHAssetResourceRequestOptions *options = [[PHAssetResourceRequestOptions alloc] init];
         [options setNetworkAccessAllowed:YES];
         
-        
-        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource
-                                                                    toFile:fileUrl
-                                                                   options:options
-                                                         completionHandler:^(NSError * _Nullable error) {
-                                                             if (error) {
-                                                                 //  NSError * err=[NSError errorWithDomain:@"test" code:0 userInfo:nil];
-                                                                 //  reject(@"0",error.description,err);
-                                                                 return resolve([NSNull null]); // TODO: use above?
-                                                             } else {
-                                                                 resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
-                                                             }
-                                                         }];
+        // Other option is writeDataForAssetResource
+        [[PHAssetResourceManager defaultManager] requestDataForAssetResource:videoResource options:options dataReceivedHandler:^(NSData * _Nonnull data) {
+            [buffer appendData:data];
+        } completionHandler:^(NSError * _Nullable error) {
+            if (error != nil) {
+                return resolve([NSNull null]);
+            }
+            
+            // Atomically makes sure we only write a file which is complete to prevent referencing to incomplete files.
+            if (![buffer writeToURL:fileUrl atomically:true]) {
+                return resolve([NSNull null]);
+            }
+            
+            return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
+        }];
     }];
 }
 
