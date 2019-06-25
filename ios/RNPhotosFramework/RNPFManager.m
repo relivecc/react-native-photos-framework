@@ -407,20 +407,51 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
     for(PHAssetResource* resource in assetResources) {
         if (resource.type == PHAssetResourceTypeVideo) {
             videoResource = resource;
+            break;
         }
     }
     if (!videoResource) {
-        return resolve([NSNull null]);
+        NSLog(@"no video resource found for asset");
+        PHVideoRequestOptions* vrOptions = [[PHVideoRequestOptions alloc] init];
+        [vrOptions setNetworkAccessAllowed:YES];
+        [vrOptions setDeliveryMode:PHVideoRequestOptionsDeliveryModeFastFormat];
+        [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:vrOptions resultHandler:^(AVAsset * _Nullable avAsset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable avAssetInfo) {
+            if (!avAsset) {
+                return resolve([NSNull null]);
+            }
+            NSLog(@"got av asset");
+            NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
+            NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+            NSLog(@"filePath: %@", filePath);
+            if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+                return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
+            }
+            __block NSData *assetData = nil;
+            AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
+            [exportSession setOutputURL:fileUrl];
+            [exportSession setOutputFileType:AVFileTypeQuickTimeMovie];
+            [exportSession exportAsynchronouslyWithCompletionHandler:^{
+                assetData = [NSData dataWithContentsOfURL:fileUrl];
+                NSLog(@"AVAsset saved to NSData.");
+                return resolve(@{
+                          @"localIdentifier": asset.localIdentifier,
+                          @"fileUrl": [fileUrl absoluteString],
+                          });
+            }];
+        }];
+    } else {
+        NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
+        NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+        PHAssetResourceRequestOptions* options = [[PHAssetResourceRequestOptions alloc] init];
+        [options setNetworkAccessAllowed:YES];
+        
+        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:options completionHandler:^(NSError * _Nullable error) {
+            resolve(@{
+                      @"localIdentifier": asset.localIdentifier,
+                      @"fileUrl": [fileUrl absoluteString],
+                      });
+        }];
     }
-    NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
-    NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-
-    [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:nil completionHandler:^(NSError * _Nullable error) {
-        resolve(@{
-                  @"localIdentifier": asset.localIdentifier,
-                  @"fileUrl": [fileUrl absoluteString],
-                  });
-    }];
 }
 
 RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
