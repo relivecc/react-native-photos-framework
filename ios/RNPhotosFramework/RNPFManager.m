@@ -423,9 +423,6 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
             NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
             NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
             NSLog(@"filePath: %@", filePath);
-            if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-                return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
-            }
             __block NSData *assetData = nil;
             AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
             [exportSession setOutputURL:fileUrl];
