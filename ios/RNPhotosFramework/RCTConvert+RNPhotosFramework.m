@@ -76,33 +76,47 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionType, (@{
                                              
                                              }), PHAssetCollectionTypeAlbum, integerValue)
 
-RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionSubtype, (@{
-                                                @"any" : @(PHCollectionListSubtypeAny),
-                                                @"albumRegular": @(PHAssetCollectionSubtypeAlbumRegular),
-                                                @"syncedEvent": @(PHAssetCollectionSubtypeAlbumSyncedEvent),
-                                                @"syncedFaces": @(PHAssetCollectionSubtypeAlbumSyncedFaces),
-                                                @"syncedAlbum": @(PHAssetCollectionSubtypeAlbumSyncedAlbum),
-                                                @"imported": @(PHAssetCollectionSubtypeAlbumImported),
-                                                
-                                                @"albumMyPhotoStream": @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
-                                                @"albumCloudShared": @(PHAssetCollectionSubtypeAlbumCloudShared),
-                                                
-                                                @"smartAlbumGeneric": @(PHAssetCollectionSubtypeSmartAlbumGeneric),
-                                                @"smartAlbumPanoramas": @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
-                                                @"smartAlbumVideos": @(PHAssetCollectionSubtypeSmartAlbumVideos),
-                                                @"smartAlbumFavorites": @(PHAssetCollectionSubtypeSmartAlbumFavorites),
-                                                @"smartAlbumTimelapses": @(PHAssetCollectionSubtypeSmartAlbumTimelapses),
-                                                @"smartAlbumAllHidden": @(PHAssetCollectionSubtypeSmartAlbumAllHidden),
-                                                @"smartAlbumRecentlyAdded": @(PHAssetCollectionSubtypeSmartAlbumRecentlyAdded),
-                                                @"smartAlbumBursts": @(PHAssetCollectionSubtypeSmartAlbumBursts),
-                                                @"smartAlbumSlomoVideos": @(PHAssetCollectionSubtypeSmartAlbumSlomoVideos),
-                                                @"smartAlbumUserLibrary": @(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
-                                                @"smartAlbumSelfPortraits": @(PHAssetCollectionSubtypeSmartAlbumSelfPortraits),
-                                                @"smartAlbumScreenshots": @(PHAssetCollectionSubtypeSmartAlbumScreenshots),
-                                                @"smartAlbumDepthEffect" : @(PHAssetCollectionSubtypeSmartAlbumDepthEffect),
-                                                @"smartAlbumLivePhotos" : @(PHAssetCollectionSubtypeSmartAlbumLivePhotos)
-                                                
-                                                }), PHCollectionListSubtypeAny, integerValue)
++ (NSDictionary *)PHAssetCollectionValues {
+    NSMutableDictionary *collection = [[NSMutableDictionary alloc] initWithDictionary:@{
+        @"any" : @(PHCollectionListSubtypeAny),
+        @"albumRegular": @(PHAssetCollectionSubtypeAlbumRegular),
+        @"syncedEvent": @(PHAssetCollectionSubtypeAlbumSyncedEvent),
+        @"syncedFaces": @(PHAssetCollectionSubtypeAlbumSyncedFaces),
+        @"syncedAlbum": @(PHAssetCollectionSubtypeAlbumSyncedAlbum),
+        @"imported": @(PHAssetCollectionSubtypeAlbumImported),
+        
+        @"albumMyPhotoStream": @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
+        @"albumCloudShared": @(PHAssetCollectionSubtypeAlbumCloudShared),
+        
+        @"smartAlbumGeneric": @(PHAssetCollectionSubtypeSmartAlbumGeneric),
+        @"smartAlbumPanoramas": @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
+        @"smartAlbumVideos": @(PHAssetCollectionSubtypeSmartAlbumVideos),
+        @"smartAlbumFavorites": @(PHAssetCollectionSubtypeSmartAlbumFavorites),
+        @"smartAlbumTimelapses": @(PHAssetCollectionSubtypeSmartAlbumTimelapses),
+        @"smartAlbumAllHidden": @(PHAssetCollectionSubtypeSmartAlbumAllHidden),
+        @"smartAlbumRecentlyAdded": @(PHAssetCollectionSubtypeSmartAlbumRecentlyAdded),
+        @"smartAlbumBursts": @(PHAssetCollectionSubtypeSmartAlbumBursts),
+        @"smartAlbumSlomoVideos": @(PHAssetCollectionSubtypeSmartAlbumSlomoVideos),
+        @"smartAlbumUserLibrary": @(PHAssetCollectionSubtypeSmartAlbumUserLibrary),
+        @"smartAlbumSelfPortraits": @(PHAssetCollectionSubtypeSmartAlbumSelfPortraits),
+        @"smartAlbumScreenshots": @(PHAssetCollectionSubtypeSmartAlbumScreenshots),
+        @"smartAlbumDepthEffect" : @(PHAssetCollectionSubtypeSmartAlbumDepthEffect),
+        @"smartAlbumLivePhotos" : @(PHAssetCollectionSubtypeSmartAlbumLivePhotos),
+    }];
+    
+    if (@available(iOS 11, *)) {
+        [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumAnimated) forKey:@"smartAlbumAnimated"];
+        [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumLongExposures) forKey:@"smartAlbumLongExposures"];
+    }
+    
+    if (@available(iOS 13, *)) {
+        [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumUnableToUpload) forKey:@"smartAlbumUnableToUpload"];
+    }
+    
+    return collection;
+}
+
+RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionSubtype, ([RCTConvert PHAssetCollectionValues]), PHCollectionListSubtypeAny, integerValue)
 
 RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetSourceType, (@{
                                          @"none": @(PHAssetSourceTypeNone),
@@ -112,20 +126,30 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetSourceType, (@{
                                          
                                          }), PHAssetSourceTypeNone, integerValue)
 
-RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetResourceType, (@{
-                                                       @"photo": @(PHAssetResourceTypePhoto),
-                                                       @"video": @(PHAssetResourceTypeVideo),
-                                                       @"audio": @(PHAssetResourceTypeAudio),
-                                                       @"alternatePhoto": @(PHAssetResourceTypeAlternatePhoto),
-                                                       @"fullSizePhoto": @(PHAssetResourceTypeFullSizePhoto),
-                                                       @"fullSizeVideo": @(PHAssetResourceTypeFullSizeVideo),
-                                                       @"adjustmentData": @(PHAssetResourceTypeAdjustmentData),
-                                                       @"adjustmentBasePhoto": @(PHAssetResourceTypeAdjustmentBasePhoto),
-                                                       @"pairedVideo": @(PHAssetResourceTypePairedVideo),
-                                                       @"fullSizePairedVideo": @(PHAssetResourceTypeFullSizePairedVideo),
-                                                       @"adjustmentBasePairedVideo": @(PHAssetResourceTypeAdjustmentBasePairedVideo)
-                                                       
-                                                       }), PHAssetResourceTypePhoto, integerValue)
++ (NSDictionary *)PHAssetResourceTypeValues {
+    NSMutableDictionary *collection = [[NSMutableDictionary alloc] initWithDictionary:@{
+        @"photo": @(PHAssetResourceTypePhoto),
+        @"video": @(PHAssetResourceTypeVideo),
+        @"audio": @(PHAssetResourceTypeAudio),
+        @"alternatePhoto": @(PHAssetResourceTypeAlternatePhoto),
+        @"fullSizePhoto": @(PHAssetResourceTypeFullSizePhoto),
+        @"fullSizeVideo": @(PHAssetResourceTypeFullSizeVideo),
+        @"adjustmentData": @(PHAssetResourceTypeAdjustmentData),
+        @"adjustmentBasePhoto": @(PHAssetResourceTypeAdjustmentBasePhoto),
+        @"pairedVideo": @(PHAssetResourceTypePairedVideo),
+        @"fullSizePairedVideo": @(PHAssetResourceTypeFullSizePairedVideo),
+        @"adjustmentBasePairedVideo": @(PHAssetResourceTypeAdjustmentBasePairedVideo),
+    }];
+    
+    if (@available(iOS 13, *)) {
+        [collection setObject:@(PHAssetResourceTypeAdjustmentBaseVideo) forKey:@"adjustmentBaseVideo"];
+    }
+    
+    return collection;
+}
+
+RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetResourceType, ([RCTConvert PHAssetResourceTypeValues]), PHAssetResourceTypePhoto, integerValue)
+
 
 + (NSArray<NSNumber *> *)PHAssetMediaTypes:(NSArray<NSString *> *)arrayWithMediaTypeStrings
 {
