@@ -34,7 +34,7 @@
     if(cacheKey != nil && fetchResult != nil) {
         [[PHCache sharedPHCache] cacheFetchResultWithUUID:fetchResult andObjectType:[PHAsset class] andUUID:cacheKey andOrginalFetchParams:params];
     }
-
+    
     return fetchResult;
 }
 
@@ -147,11 +147,18 @@
             mimeType = (__bridge NSString *)(mimeTypeCString);
         }
         
+        NSString *type = (NSString *)[NSNull null];
+        NSString *typeString = [[RCTConvert PHAssetResourceTypeValuesReversed] objectForKey:@(resourceMetadata.type)];
+        
+        if (typeString != nil) {
+            type = typeString;
+        }
+        
         [arrayWithResourcesMetadata addObject:@{
                                                 @"originalFilename" : resourceMetadata.originalFilename,
                                                 @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
                                                 @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier,
-                                                @"type" : [[RCTConvert PHAssetResourceTypeValuesReversed] objectForKey:@(resourceMetadata.type)],
+                                                @"type" : type,
                                                 @"mimeType" : mimeType,
                                                 @"fileExtension" : [resourceMetadata.originalFilename pathExtension]
                                                 }];
