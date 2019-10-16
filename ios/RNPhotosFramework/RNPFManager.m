@@ -412,7 +412,7 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
     }
     if (!videoResource) {
         for(PHAssetResource* resource in assetResources) {
-            if (resource.type == PHAssetResourceTypePairedVideo) {
+            if (resource.type == PHAssetResourceTypeVideo) {
                 videoResource = resource;
                 break;
             }
