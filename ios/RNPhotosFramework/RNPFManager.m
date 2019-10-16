@@ -410,6 +410,7 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
             break;
         }
     }
+    // if for some reason the fullSizeVideo does not exist, then fallback to the original video
     if (!videoResource) {
         for(PHAssetResource* resource in assetResources) {
             if (resource.type == PHAssetResourceTypeVideo) {
@@ -491,6 +492,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
                 break;
             }
         }
+        // if for some reason the fullSizeVideo does not exist, then fallback to the original video
         if (!videoResource) {
             assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
             for(PHAssetResource* resource in assetResources) {
