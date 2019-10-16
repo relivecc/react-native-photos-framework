@@ -405,11 +405,22 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
     
     NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
     for(PHAssetResource* resource in assetResources) {
-        if (resource.type == PHAssetResourceTypeVideo) {
+        if (resource.type == PHAssetResourceTypeFullSizeVideo) {
             videoResource = resource;
             break;
         }
     }
+    // if for some reason the fullSizeVideo does not exist, then fallback to the original video
+    if (!videoResource) {
+        for(PHAssetResource* resource in assetResources) {
+            if (resource.type == PHAssetResourceTypeVideo) {
+                videoResource = resource;
+                break;
+            }
+        }
+    }
+
+    
     if (!videoResource) {
         NSLog(@"no video resource found for asset");
         PHVideoRequestOptions* vrOptions = [[PHVideoRequestOptions alloc] init];
@@ -472,18 +483,26 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         if (!livePhoto) {
             return resolve([NSNull null]);
         }
-        
-        // Check if the new livephoto asset has a video part.
-        NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
         PHAssetResource* videoResource = nil;
-        
-        for(PHAssetResource* resource in assetResources){
-            if (resource.type == PHAssetResourceTypePairedVideo) {
+        // Check if the new livephoto asset has a video part.
+        NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
+        for(PHAssetResource* resource in assetResources) {
+            if (resource.type == PHAssetResourceTypeFullSizePairedVideo) {
                 videoResource = resource;
                 break;
             }
         }
-        
+        // if for some reason the fullSizeVideo does not exist, then fallback to the original video
+        if (!videoResource) {
+            assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+            for(PHAssetResource* resource in assetResources) {
+                if (resource.type == PHAssetResourceTypePairedVideo) {
+                    videoResource = resource;
+                    break;
+                }
+            }
+        }
+
         if (!videoResource) {
             return resolve([NSNull null]);
         }
