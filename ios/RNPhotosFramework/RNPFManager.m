@@ -485,7 +485,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         }
         PHAssetResource* videoResource = nil;
         // Check if the new livephoto asset has a video part.
-        NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
+        NSArray* assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
         for(PHAssetResource* resource in assetResources) {
             if (resource.type == PHAssetResourceTypeFullSizePairedVideo) {
                 videoResource = resource;
@@ -494,7 +494,6 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         }
         // if for some reason the fullSizeVideo does not exist, then fallback to the original video
         if (!videoResource) {
-            assetResources = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
             for(PHAssetResource* resource in assetResources) {
                 if (resource.type == PHAssetResourceTypePairedVideo) {
                     videoResource = resource;
