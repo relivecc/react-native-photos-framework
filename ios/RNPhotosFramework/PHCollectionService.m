@@ -133,7 +133,7 @@ static id ObjectOrNull(id object)
 + (NSMutableDictionary *)generateAlbumResponseFromCollection:(PHCollection *)collection numberOfPreviewAssets:(int)numberOfPreviewAssets countType:(RNPFAssetCountType)countType includeMetadata:(BOOL)includeMetadata includeResourcesMetadata:(BOOL)resourcesMetadata cacheAssets:(BOOL)cacheAssets assetFetchParams:(NSDictionary *)assetFetchParams {
     
     NSMutableDictionary *albumDictionary = [NSMutableDictionary new];
-    
+
     if([collection isKindOfClass:[PHAssetCollection class]]) {
         PHAssetCollection *phAssetCollection = (PHAssetCollection *)collection;
         PHAssetCollectionType albumType = [phAssetCollection assetCollectionType];
@@ -186,12 +186,8 @@ static id ObjectOrNull(id object)
             
         }
     }
-    
-    NSString *title = collection.localizedTitle;
-    if (!title) {
-        title = @"Unknown";
-    }
-    [albumDictionary setObject:title forKey:@"title"];
+
+    [albumDictionary setObject:ObjectOrNull(collection.localizedTitle) forKey:@"title"];
     [albumDictionary setObject:collection.localIdentifier forKey:@"localIdentifier"];
     
     NSMutableArray *permittedOperations = [NSMutableArray arrayWithCapacity:7];
