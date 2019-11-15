@@ -187,7 +187,11 @@ static id ObjectOrNull(id object)
         }
     }
     
-    [albumDictionary setObject:collection.localizedTitle forKey:@"title"];
+    NSString *title = collection.localizedTitle;
+    if (!title) {
+        title = @"Unknown";
+    }
+    [albumDictionary setObject:title forKey:@"title"];
     [albumDictionary setObject:collection.localIdentifier forKey:@"localIdentifier"];
     
     NSMutableArray *permittedOperations = [NSMutableArray arrayWithCapacity:7];
