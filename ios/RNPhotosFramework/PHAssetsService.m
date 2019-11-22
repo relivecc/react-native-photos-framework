@@ -155,13 +155,13 @@
         }
         
         [arrayWithResourcesMetadata addObject:@{
-                                                @"originalFilename" : resourceMetadata.originalFilename,
-                                                @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
-                                                @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier,
-                                                @"type" : type,
-                                                @"mimeType" : mimeType,
-                                                @"fileExtension" : [resourceMetadata.originalFilename pathExtension]
-                                                }];
+            @"originalFilename" : resourceMetadata.originalFilename == nil ? NULL : resourceMetadata.originalFilename,
+            @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier == nil ? NULL : resourceMetadata.assetLocalIdentifier,
+            @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier == nil ? NULL : resourceMetadata.uniformTypeIdentifier,
+            @"type" : type,
+            @"mimeType" : mimeType,
+            @"fileExtension" : resourceMetadata.originalFilename == nil ? NULL : [resourceMetadata.originalFilename pathExtension] == nil ? NULL : [resourceMetadata.originalFilename pathExtension]
+        }];
     }
     
     [dictToExtend setObject:arrayWithResourcesMetadata forKey:@"resourcesMetadata"];
