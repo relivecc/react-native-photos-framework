@@ -11,7 +11,7 @@
 //
 
 
-#import "SDAVAssetExportSession.h"
+#import "PhotosSDAVAssetExportSession.h"
 
 @interface RNPhotosSDAVAssetExportSession ()
 
