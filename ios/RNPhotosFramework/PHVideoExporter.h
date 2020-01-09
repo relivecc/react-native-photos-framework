@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "SDAVAssetExportSession.h"
+#import "PhotosSDAVAssetExportSession.h"
 
 @interface PHVideoExporter : NSObject
 
