@@ -16,6 +16,5 @@ Pod::Spec.new do |s|
   s.source       = {:git => "ssh://git@github.com/relivecc/react-native-photos-framework.git", :tag => "v#{s.version}" }
   s.source_files  = "ios/**/*.{h,m,swift}"
 
-  s.frameworks = 'XCTest'
   s.dependency 'React'
 end
