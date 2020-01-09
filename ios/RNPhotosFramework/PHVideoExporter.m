@@ -59,7 +59,7 @@
         }
     }
 
-    self.encoder = [SDAVAssetExportSession.alloc initWithAsset:avasset];
+    self.encoder = [RNPhotosSDAVAssetExportSession.alloc initWithAsset:avasset];
     
     [_encoder addObserver:self forKeyPath:@"progress" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
     

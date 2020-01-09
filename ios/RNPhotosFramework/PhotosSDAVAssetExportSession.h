@@ -1,5 +1,5 @@
 //
-//  SDAVAssetExportSession.h
+//  RNPhotosSDAVAssetExportSession.h
 //
 // This file is part of the SDAVAssetExportSession package.
 //
@@ -13,7 +13,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
-@protocol SDAVAssetExportSessionDelegate;
+@protocol RNPhotosSDAVAssetExportSessionDelegate;
 
 
 /**
@@ -33,9 +33,9 @@
  * about the reason for the failure.
  */
 
-@interface SDAVAssetExportSession : NSObject
+@interface RNPhotosSDAVAssetExportSession : NSObject
 
-@property (nonatomic, weak) id<SDAVAssetExportSessionDelegate> delegate;
+@property (nonatomic, weak) id<RNPhotosSDAVAssetExportSessionDelegate> delegate;
 
 /**
  * The asset with which the export session was initialized.
@@ -187,8 +187,8 @@
 @end
 
 
-@protocol SDAVAssetExportSessionDelegate <NSObject>
+@protocol RNPhotosSDAVAssetExportSessionDelegate <NSObject>
 
-- (void)exportSession:(SDAVAssetExportSession *)exportSession renderFrame:(CVPixelBufferRef)pixelBuffer withPresentationTime:(CMTime)presentationTime toBuffer:(CVPixelBufferRef)renderBuffer;
+- (void)exportSession:(RNPhotosSDAVAssetExportSession *)exportSession renderFrame:(CVPixelBufferRef)pixelBuffer withPresentationTime:(CMTime)presentationTime toBuffer:(CVPixelBufferRef)renderBuffer;
 
 @end
