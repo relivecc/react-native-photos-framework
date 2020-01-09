@@ -14,8 +14,12 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "9.0"
 
   s.source       = {:git => "ssh://git@github.com/relivecc/react-native-photos-framework.git", :tag => "v#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m,swift}"
+  s.source_files  = "ios/RNPhotosFramework/**/*.{h,m,swift}"
 
-  s.frameworks = 'XCTest'
   s.dependency 'React'
+
+  s.test_spec 'RNPhotosFrameworkTests' do |test_spec|
+    test_spec.source_files = 'ios/RNPhotosFrameworkTests/**/*.{h,m, swift}'
+    test_spec.framework = 'XCTest' # This dependency will only be linked with your tests.
+  end  
 end
