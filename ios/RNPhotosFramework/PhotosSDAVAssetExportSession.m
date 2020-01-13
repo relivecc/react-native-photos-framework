@@ -1,5 +1,5 @@
 //
-//  SDAVAssetExportSession.m
+//  RNPhotosSDAVAssetExportSession.m
 //
 // This file is part of the SDAVAssetExportSession package.
 //
@@ -11,9 +11,9 @@
 //
 
 
-#import "SDAVAssetExportSession.h"
+#import "PhotosSDAVAssetExportSession.h"
 
-@interface SDAVAssetExportSession ()
+@interface RNPhotosSDAVAssetExportSession ()
 
 @property (nonatomic, assign, readwrite) float progress;
 
@@ -29,7 +29,7 @@
 
 @end
 
-@implementation SDAVAssetExportSession
+@implementation RNPhotosSDAVAssetExportSession
 {
     NSError *_error;
     NSTimeInterval duration;
@@ -38,7 +38,7 @@
 
 + (id)exportSessionWithAsset:(AVAsset *)asset
 {
-    return [SDAVAssetExportSession.alloc initWithAsset:asset];
+    return [RNPhotosSDAVAssetExportSession.alloc initWithAsset:asset];
 }
 
 - (id)initWithAsset:(AVAsset *)asset
