@@ -66,6 +66,7 @@
 
     for(int i = 0;i < assetsArray.count; i++) {
         id assetObj = [assetsArray objectAtIndex:i];
+        try {
         NSNumber *assetIndex = (NSNumber *)[NSNull null];
         PHAsset *asset;
         if ([assetObj isKindOfClass:[PHAsset class]]) {
@@ -96,6 +97,10 @@
         }
         
         [uriArray addObject:responseDict];
+        } catch {
+            log asset + metadata without generating crash so we can identify type of assets generating issue
+            https://console.firebase.google.com/u/1/project/relive-1483378336491/crashlytics/app/ios:cc.relive.reliveapp/issues/60fa3e90f5012d5958a534b2da7174f2?time=last-seven-days&sessionId=b27aa225dda1440dae4fc6dd38bf3de2_DNE_0_v2
+        }
     }
     return uriArray;
 }
