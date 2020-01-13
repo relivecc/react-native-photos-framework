@@ -77,10 +77,10 @@
         }
 
         NSMutableDictionary *responseDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                             [asset localIdentifier], @"localIdentifier",
-                                             @([asset pixelWidth]), @"width",
-                                             @([asset pixelHeight]), @"height",
-                                             [reveredMediaTypes objectForKey:@([asset mediaType])], @"mediaType",
+                                             [asset localIdentifier] == nil ? [NSNull null] : [asset localIdentifier], @"localIdentifier",
+                                             [asset pixelWidth] == nil ? [NSNull null] : @([asset pixelWidth]), @"width",
+                                             [asset pixelHeight] == nil ? [NSNull null] : @([asset pixelHeight]), @"height",
+                                             [reveredMediaTypes objectForKey:@([asset mediaType])] == nil ? [NSNull null] : [reveredMediaTypes objectForKey:@([asset mediaType])], @"mediaType",
                                              assetIndex, @"collectionIndex",
                                              nil];
         
@@ -94,7 +94,7 @@
         if (includeResourcesMetadata) {
             [self extendAssetDictWithAssetResourcesMetadata:responseDict andPHAsset:asset];
         }
-        
+                
         [uriArray addObject:responseDict];
     }
     return uriArray;
@@ -155,13 +155,13 @@
         }
         
         [arrayWithResourcesMetadata addObject:@{
-                                                @"originalFilename" : resourceMetadata.originalFilename,
-                                                @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
-                                                @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier,
-                                                @"type" : type,
-                                                @"mimeType" : mimeType,
-                                                @"fileExtension" : [resourceMetadata.originalFilename pathExtension]
-                                                }];
+            @"originalFilename" : resourceMetadata.originalFilename != nil ? resourceMetadata.originalFilename : [NSNull null],
+            @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier != nil ? resourceMetadata.assetLocalIdentifier : [NSNull null],
+            @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier != nil ? resourceMetadata.uniformTypeIdentifier : [NSNull null],
+            @"type" : type != nil ? type : [NSNull null],
+            @"mimeType" : mimeType,
+            @"fileExtension" : resourceMetadata.originalFilename == nil ? [NSNull null] : [resourceMetadata.originalFilename pathExtension] == nil ? [NSNull null] : [resourceMetadata.originalFilename pathExtension]
+        }];
     }
     
     [dictToExtend setObject:arrayWithResourcesMetadata forKey:@"resourcesMetadata"];
