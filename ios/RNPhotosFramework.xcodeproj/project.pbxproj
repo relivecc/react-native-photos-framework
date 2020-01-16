@@ -31,7 +31,7 @@
 		63DCC8E71EA750ED000E46F9 /* PHSaveAssetFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 63DCC8E61EA750ED000E46F9 /* PHSaveAssetFileRequest.m */; };
 		63DCC8EA1EA7510D000E46F9 /* PHSaveAssetToFileOperationResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 63DCC8E91EA7510D000E46F9 /* PHSaveAssetToFileOperationResult.m */; };
 		63DCC8F01EA7945F000E46F9 /* PHVideoExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 63DCC8EF1EA7945F000E46F9 /* PHVideoExporter.m */; };
-		63DCC8F31EA7CA42000E46F9 /* SDAVAssetExportSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 63DCC8F21EA7CA42000E46F9 /* SDAVAssetExportSession.m */; };
+		63DCC8F31EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 63DCC8F21EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.m */; };
 		8C2A0F491E22FBB500E31596 /* PHSaveAsset.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C2A0F481E22FBB500E31596 /* PHSaveAsset.m */; };
 		8C2A0FB81E2584F300E31596 /* RNPFFileDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C2A0FB71E2584F300E31596 /* RNPFFileDownloader.m */; };
 		8C2A0FC71E2788F800E31596 /* PHCreateMediaQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C2A0FC61E2788F800E31596 /* PHCreateMediaQueue.m */; };
@@ -110,8 +110,8 @@
 		63DCC8E91EA7510D000E46F9 /* PHSaveAssetToFileOperationResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PHSaveAssetToFileOperationResult.m; sourceTree = "<group>"; };
 		63DCC8EE1EA7945F000E46F9 /* PHVideoExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PHVideoExporter.h; sourceTree = "<group>"; };
 		63DCC8EF1EA7945F000E46F9 /* PHVideoExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PHVideoExporter.m; sourceTree = "<group>"; };
-		63DCC8F11EA7CA42000E46F9 /* SDAVAssetExportSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDAVAssetExportSession.h; sourceTree = "<group>"; };
-		63DCC8F21EA7CA42000E46F9 /* SDAVAssetExportSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDAVAssetExportSession.m; sourceTree = "<group>"; };
+		63DCC8F11EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhotosSDAVAssetExportSession.h; sourceTree = "<group>"; };
+		63DCC8F21EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PhotosSDAVAssetExportSession.m; sourceTree = "<group>"; };
 		8C2A0F471E22FBB500E31596 /* PHSaveAsset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PHSaveAsset.h; sourceTree = "<group>"; };
 		8C2A0F481E22FBB500E31596 /* PHSaveAsset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PHSaveAsset.m; sourceTree = "<group>"; };
 		8C2A0FB61E2584F300E31596 /* RNPFFileDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNPFFileDownloader.h; sourceTree = "<group>"; };
@@ -203,8 +203,8 @@
 		8CA929DB1E1FADB900F79455 /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				63DCC8F11EA7CA42000E46F9 /* SDAVAssetExportSession.h */,
-				63DCC8F21EA7CA42000E46F9 /* SDAVAssetExportSession.m */,
+				63DCC8F11EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.h */,
+				63DCC8F21EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.m */,
 				6394ACE71EA6AB5600AC445F /* RCTImageResizer.h */,
 				6394ACE81EA6AB5600AC445F /* RCTImageResizer.m */,
 				6394ACE41EA6AB4800AC445F /* ImageHelpers.h */,
@@ -385,7 +385,7 @@
 				63DCC8F01EA7945F000E46F9 /* PHVideoExporter.m in Sources */,
 				8C2A0FD01E283B6400E31596 /* PHCache.m in Sources */,
 				6394ACE61EA6AB4800AC445F /* ImageHelpers.m in Sources */,
-				63DCC8F31EA7CA42000E46F9 /* SDAVAssetExportSession.m in Sources */,
+				63DCC8F31EA7CA42000E46F9 /* PhotosSDAVAssetExportSession.m in Sources */,
 				6326189F1F5C85C4008A3E90 /* PHCancellationTokenManager.m in Sources */,
 				8C2A0FCD1E2826E300E31596 /* iDebounce.m in Sources */,
 				63D8F94B1E65C7F200A74433 /* RNPFUrlRequestHandler.m in Sources */,

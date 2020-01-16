@@ -1,5 +1,5 @@
 //
-//  RNPhotosSDAVAssetExportSession.m
+//  PhotosSDAVAssetExportSession.m
 //
 // This file is part of the SDAVAssetExportSession package.
 //
