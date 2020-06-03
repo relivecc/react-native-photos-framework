@@ -506,7 +506,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             return resolve([NSNull null]);
         }
         
-        NSString* identifier = [localIdentifier componentsSeparatedByString:@"/"][0];
+        NSString* identifier = [NSString stringWithFormat:@"%@", [localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@""]];
         NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"live_%@.%@", identifier, [videoResource.originalFilename pathExtension]]];
         NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
         
