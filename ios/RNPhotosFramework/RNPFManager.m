@@ -429,38 +429,22 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
                 }
             }
         }
-        
-                       
+
         if (!videoResource) {
-            NSLog(@"no video resource found for asset");
-            NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
-            NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-            NSLog(@"filePath: %@", filePath);
-            __block NSData *assetData = nil;
-            AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
-            [exportSession setOutputURL:fileUrl];
-            [exportSession setOutputFileType:AVFileTypeQuickTimeMovie];
-            [exportSession exportAsynchronouslyWithCompletionHandler:^{
-                assetData = [NSData dataWithContentsOfURL:fileUrl];
-                NSLog(@"AVAsset saved to NSData.");
-                return resolve(@{
-                          @"localIdentifier": asset.localIdentifier,
-                          @"fileUrl": [fileUrl absoluteString],
-                          });
-            }];
-        } else {
-            NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
-            NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-            PHAssetResourceRequestOptions* options = [[PHAssetResourceRequestOptions alloc] init];
-            [options setNetworkAccessAllowed:YES];
-            
-            [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:options completionHandler:^(NSError * _Nullable error) {
-                resolve(@{
-                          @"localIdentifier": asset.localIdentifier,
-                          @"fileUrl": [fileUrl absoluteString],
-                          });
-            }];
+            return resolve([NSNull null]);
         }
+   
+        NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
+        NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+        PHAssetResourceRequestOptions* options = [[PHAssetResourceRequestOptions alloc] init];
+        [options setNetworkAccessAllowed:YES];
+        
+        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:options completionHandler:^(NSError * _Nullable error) {
+            resolve(@{
+                      @"localIdentifier": asset.localIdentifier,
+                      @"fileUrl": [fileUrl absoluteString],
+                      });
+        }];
     }];
 }
 
