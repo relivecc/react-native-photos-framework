@@ -400,37 +400,39 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
     }
     
     PHAsset *asset = assets[0];
+    PHVideoRequestOptions* vrOptions = [[PHVideoRequestOptions alloc] init];
+    [vrOptions setNetworkAccessAllowed:YES];
+    [vrOptions setDeliveryMode:PHVideoRequestOptionsDeliveryModeFastFormat];
     
-    PHAssetResource* videoResource = nil;
-    
-    NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
-    for(PHAssetResource* resource in assetResources) {
-        if (resource.type == PHAssetResourceTypeFullSizeVideo) {
-            videoResource = resource;
-            break;
+    [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:vrOptions resultHandler:^(AVAsset * _Nullable avAsset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable avAssetInfo) {
+        
+        if (!avAsset) {
+            return resolve([NSNull null]);
         }
-    }
-    // if for some reason the fullSizeVideo does not exist, then fallback to the original video
-    if (!videoResource) {
+        
+        NSLog(@"got av asset");
+        PHAssetResource* videoResource = nil;
+
+        NSArray* assetResources = [PHAssetResource assetResourcesForAsset:asset];
         for(PHAssetResource* resource in assetResources) {
-            if (resource.type == PHAssetResourceTypeVideo) {
+            if (resource.type == PHAssetResourceTypeFullSizeVideo) {
                 videoResource = resource;
                 break;
             }
         }
-    }
-
-    
-    if (!videoResource) {
-        NSLog(@"no video resource found for asset");
-        PHVideoRequestOptions* vrOptions = [[PHVideoRequestOptions alloc] init];
-        [vrOptions setNetworkAccessAllowed:YES];
-        [vrOptions setDeliveryMode:PHVideoRequestOptionsDeliveryModeFastFormat];
-        [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:vrOptions resultHandler:^(AVAsset * _Nullable avAsset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable avAssetInfo) {
-            if (!avAsset) {
-                return resolve([NSNull null]);
+        // if for some reason the fullSizeVideo does not exist, then fallback to the original video
+        if (!videoResource) {
+            for(PHAssetResource* resource in assetResources) {
+                if (resource.type == PHAssetResourceTypeVideo) {
+                    videoResource = resource;
+                    break;
+                }
             }
-            NSLog(@"got av asset");
+        }
+        
+                       
+        if (!videoResource) {
+            NSLog(@"no video resource found for asset");
             NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mov",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]]]];
             NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
             NSLog(@"filePath: %@", filePath);
@@ -446,20 +448,20 @@ RCT_EXPORT_METHOD(saveVideoToDisk:(NSString *)localIdentifier
                           @"fileUrl": [fileUrl absoluteString],
                           });
             }];
-        }];
-    } else {
-        NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
-        NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-        PHAssetResourceRequestOptions* options = [[PHAssetResourceRequestOptions alloc] init];
-        [options setNetworkAccessAllowed:YES];
-        
-        [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:options completionHandler:^(NSError * _Nullable error) {
-            resolve(@{
-                      @"localIdentifier": asset.localIdentifier,
-                      @"fileUrl": [fileUrl absoluteString],
-                      });
-        }];
-    }
+        } else {
+            NSString* filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSString stringWithFormat:@"%@", [[asset localIdentifier] stringByReplacingOccurrencesOfString:@"/" withString:@""]], [videoResource.originalFilename pathExtension]]];
+            NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
+            PHAssetResourceRequestOptions* options = [[PHAssetResourceRequestOptions alloc] init];
+            [options setNetworkAccessAllowed:YES];
+            
+            [[PHAssetResourceManager defaultManager] writeDataForAssetResource:videoResource toFile:fileUrl options:options completionHandler:^(NSError * _Nullable error) {
+                resolve(@{
+                          @"localIdentifier": asset.localIdentifier,
+                          @"fileUrl": [fileUrl absoluteString],
+                          });
+            }];
+        }
+    }];
 }
 
 RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
