@@ -478,12 +478,12 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
     [options setNetworkAccessAllowed:YES];
     __block bool resolved = false;
     [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:CGSizeZero contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-        
+        if (resolved) {
+            return;
+        }
         if (!livePhoto) {
-            if (!resolved) {
-                resolved = true;
-                return resolve([NSNull null]);
-            }
+            resolved = true;
+            return resolve([NSNull null]);
         }
         PHAssetResource* videoResource = nil;
         // Check if the new livephoto asset has a video part.
@@ -505,10 +505,8 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         }
 
         if (!videoResource) {
-            if (!resolved) {
-                resolved = true;
-                return resolve([NSNull null]);
-            }
+            resolved = true;
+            return resolve([NSNull null]);
         }
         
         NSString* identifier = [NSString stringWithFormat:@"%@", [localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@""]];
@@ -516,10 +514,8 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
         
         if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-            if (!resolved) {
-                resolved = true;
-                return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
-            }
+            resolved = true;
+            return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }
         
         NSMutableData *buffer = [[NSMutableData alloc] init];
@@ -531,23 +527,17 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             [buffer appendData:data];
         } completionHandler:^(NSError * _Nullable error) {
             if (error != nil) {
-                if (!resolved) {
-                    resolved = true;
-                    return resolve([NSNull null]);
-                }
+                resolved = true;
+                return resolve([NSNull null]);
             }
             
             // Atomically makes sure we only write a file which is complete to prevent referencing to incomplete files.
             if (![buffer writeToURL:fileUrl atomically:true]) {
-                if (!resolved) {
-                    resolved = true;
-                    return resolve([NSNull null]);
-                }
-            }
-            if (!resolved) {
                 resolved = true;
-                return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
+                return resolve([NSNull null]);
             }
+            resolved = true;
+            return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }];
     }];
 }
