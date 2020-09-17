@@ -476,13 +476,13 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
     PHAsset *asset = assets[0];
     PHLivePhotoRequestOptions* options = [[PHLivePhotoRequestOptions alloc] init];
     [options setNetworkAccessAllowed:YES];
-    __block bool resolved = false;
+    __block bool resultHandled = false;
     [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:CGSizeZero contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-        if (resolved) {
+        if (resultHandled) {
             return;
         }
-        if (!livePhoto) {
-            resolved = true;
+        resultHandled = true;
+        if (!livePhoto) {    
             return resolve([NSNull null]);
         }
         PHAssetResource* videoResource = nil;
@@ -505,7 +505,6 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         }
 
         if (!videoResource) {
-            resolved = true;
             return resolve([NSNull null]);
         }
         
@@ -514,7 +513,6 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
         NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
         
         if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-            resolved = true;
             return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }
         
@@ -527,16 +525,14 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             [buffer appendData:data];
         } completionHandler:^(NSError * _Nullable error) {
             if (error != nil) {
-                resolved = true;
                 return resolve([NSNull null]);
             }
             
             // Atomically makes sure we only write a file which is complete to prevent referencing to incomplete files.
             if (![buffer writeToURL:fileUrl atomically:true]) {
-                resolved = true;
                 return resolve([NSNull null]);
             }
-            resolved = true;
+
             return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }];
     }];
