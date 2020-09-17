@@ -475,12 +475,14 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
     
     PHAsset *asset = assets[0];
     PHLivePhotoRequestOptions* options = [[PHLivePhotoRequestOptions alloc] init];
-    [options setDeliveryMode:PHImageRequestOptionsDeliveryModeFastFormat];
     [options setNetworkAccessAllowed:YES];
-    
+    __block bool resultHandled = false;
     [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:CGSizeZero contentMode:PHImageContentModeDefault options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-        
-        if (!livePhoto) {
+        if (resultHandled) {
+            return;
+        }
+        resultHandled = true;
+        if (!livePhoto) {    
             return resolve([NSNull null]);
         }
         PHAssetResource* videoResource = nil;
@@ -530,7 +532,7 @@ RCT_EXPORT_METHOD(saveLivePhotoToDisk:(NSString *)localIdentifier
             if (![buffer writeToURL:fileUrl atomically:true]) {
                 return resolve([NSNull null]);
             }
-            
+
             return resolve(@{ @"localIdentifier": asset.localIdentifier, @"fileUrl": [fileUrl absoluteString] });
         }];
     }];
