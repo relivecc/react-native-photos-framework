@@ -36,24 +36,27 @@
   ],
   "scripts": {
     "test": "jest",
-    "test-ios": "set -o pipefail && xcodebuild test -verbose -project example/ios/Example.xcodeproj -scheme Example -destination 'id=E40727B3-41FB-4D6E-B4CB-BFA87109EB12' | xcpretty",
+    "test-ios": "set -o pipefail && xcodebuild test -verbose -project example/ios/Example.xcodeproj -scheme Example -destination 'id=965DC1FB-1677-46B1-967E-6BCA7903C711' | xcpretty",
     "update": "git add . && git commit -m \"Updated\" && npm version patch && git push --tags && git push origin master && npm publish",
     "update-small": "git add . && git commit -m \"Updated\" && git push origin master"
   },
   "devDependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-jest": "^19.0.0",
-    "babel-polyfill": "^6.23.0",
-    "babel-preset-react-native": "^2.0.0",
-    "jest": "^19.0.2",
+    "babel-cli": "^6.26.0",
+    "babel-jest": "^26.5.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-react-native": "^4.0.1",
+    "jest": "^26.5.0",
     "jest-react-native": "^18.0.0",
-    "prop-types": "^15.5.10"
+    "prop-types": "^15.7.2"
   },
   "jest": {
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/example/",
       "local-cli/"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!react-native|react-navigation)/"
     ]
   }
 }
