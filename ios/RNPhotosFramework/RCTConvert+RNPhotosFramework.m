@@ -53,7 +53,7 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetMediaType, (@{
                                         @"video": @(PHAssetMediaTypeVideo),
                                         @"audio": @(PHAssetMediaTypeAudio),
                                         @"unknown": @(PHAssetMediaTypeUnknown)
-                                        
+
                                         }), PHAssetMediaTypeImage, integerValue)
 
 RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetMediaSubtype, (@{
@@ -73,7 +73,7 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionType, (@{
                                              @"album": @(PHAssetCollectionTypeAlbum),
                                              @"smartAlbum": @(PHAssetCollectionTypeSmartAlbum),
                                              @"moment": @(PHAssetCollectionTypeMoment)
-                                             
+
                                              }), PHAssetCollectionTypeAlbum, integerValue)
 
 + (NSDictionary *)PHAssetCollectionValues {
@@ -84,10 +84,10 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionType, (@{
         @"syncedFaces": @(PHAssetCollectionSubtypeAlbumSyncedFaces),
         @"syncedAlbum": @(PHAssetCollectionSubtypeAlbumSyncedAlbum),
         @"imported": @(PHAssetCollectionSubtypeAlbumImported),
-        
+
         @"albumMyPhotoStream": @(PHAssetCollectionSubtypeAlbumMyPhotoStream),
         @"albumCloudShared": @(PHAssetCollectionSubtypeAlbumCloudShared),
-        
+
         @"smartAlbumGeneric": @(PHAssetCollectionSubtypeSmartAlbumGeneric),
         @"smartAlbumPanoramas": @(PHAssetCollectionSubtypeSmartAlbumPanoramas),
         @"smartAlbumVideos": @(PHAssetCollectionSubtypeSmartAlbumVideos),
@@ -103,27 +103,27 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionType, (@{
         @"smartAlbumDepthEffect" : @(PHAssetCollectionSubtypeSmartAlbumDepthEffect),
         @"smartAlbumLivePhotos" : @(PHAssetCollectionSubtypeSmartAlbumLivePhotos),
     }];
-    
+
     if (@available(iOS 11, *)) {
         [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumAnimated) forKey:@"smartAlbumAnimated"];
         [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumLongExposures) forKey:@"smartAlbumLongExposures"];
     }
-    
+
     if (@available(iOS 13, *)) {
         [collection setObject:@(PHAssetCollectionSubtypeSmartAlbumUnableToUpload) forKey:@"smartAlbumUnableToUpload"];
     }
-    
+
     return collection;
 }
 
-RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetCollectionSubtype, ([RCTConvert PHAssetCollectionValues]), PHCollectionListSubtypeAny, integerValue)
+RCT_ENUM_CONVERTER_WITH_REVERSED(RNPFAssetCollectionSubtype, ([RCTConvert PHAssetCollectionValues]), PHCollectionListSubtypeAny, integerValue)
 
 RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetSourceType, (@{
                                          @"none": @(PHAssetSourceTypeNone),
                                          @"userLibrary": @(PHAssetSourceTypeUserLibrary),
                                          @"cloudShared": @(PHAssetSourceTypeCloudShared),
                                          @"itunesSynced": @(PHAssetSourceTypeiTunesSynced)
-                                         
+
                                          }), PHAssetSourceTypeNone, integerValue)
 
 + (NSDictionary *)PHAssetResourceTypeValues {
@@ -140,11 +140,11 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetSourceType, (@{
         @"fullSizePairedVideo": @(PHAssetResourceTypeFullSizePairedVideo),
         @"adjustmentBasePairedVideo": @(PHAssetResourceTypeAdjustmentBasePairedVideo),
     }];
-    
+
     if (@available(iOS 13, *)) {
         [collection setObject:@(PHAssetResourceTypeAdjustmentBaseVideo) forKey:@"adjustmentBaseVideo"];
     }
-    
+
     return collection;
 }
 
@@ -231,7 +231,7 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetResourceType, ([RCTConvert PHAssetResour
         NSString * basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
         assetRequest.dir = basePath;
     }
-    
+
     if([assetRequest.mediaType isEqualToString:@"video"]) {
         assetRequest.videoRequestOptions = [RNPFHelpers getVideoRequestOptionsFromParams:assetRequest.loadOptions];
     }
@@ -253,32 +253,32 @@ RCT_ENUM_CONVERTER_WITH_REVERSED(PHAssetResourceType, ([RCTConvert PHAssetResour
     //Required:
     double lat = [RCTConvert double:json[@"lat"]];
     double lng = [RCTConvert double:json[@"lng"]];
-    
+
     //Optional:
     double altitude = 0;
     NSString *altitudeValue = json[@"altitude"];
     if(altitudeValue != nil) {
         altitude = [RCTConvert double:altitudeValue];
     }
-    
+
     double course = 0;
     NSString *courseValue = json[@"heading"];
     if(courseValue != nil) {
         course = [RCTConvert double:courseValue];
     }
-    
+
     double speed = 0;
     NSString *speedValue = json[@"speed"];
     if(speedValue != nil) {
         speed = [RCTConvert double:speedValue];
     }
-    
+
     NSDate *timeStamp = [NSDate date];
     NSString *timeStampValue = json[@"timeStamp"];
     if(timeStampValue) {
         timeStamp = [RCTConvert NSDate:timeStampValue];
     }
-    
+
     return [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(lat, lng) altitude:altitude horizontalAccuracy:0 verticalAccuracy:0 course:course speed:speed timestamp:timeStamp];
 }
 

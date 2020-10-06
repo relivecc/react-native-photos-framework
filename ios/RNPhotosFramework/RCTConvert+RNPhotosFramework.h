@@ -10,13 +10,15 @@ typedef NS_ENUM(NSInteger, RNPFAssetCountType) {
     RNPFAssetCountTypeExact = 2,
 };
 
+typedef NSInteger RNPFAssetCollectionSubtype;
+
 @interface RCTConvert(ReactNativePhotosFramework)
 
 + (RNPFAssetCountType)RNPFAssetCountType:(id)json;
 + (PHAssetMediaType)PHAssetMediaType:(id)json;
 + (PHAssetMediaSubtype)PHAssetMediaSubtype:(id)json;
 + (PHAssetCollectionType)PHAssetCollectionType:(id)json;
-+ (PHAssetCollectionSubtype)PHAssetCollectionSubtype:(id)json;
++ (RNPFAssetCollectionSubtype)RNPFAssetCollectionSubtype:(id)json;
 + (PHAssetSourceType)PHAssetSourceType:(id)json;
 + (PHAuthorizationStatus)PHAuthorizationStatus:(id)json;
 + (PHAssetResourceType)PHAssetResourceType:(id)json;
@@ -38,7 +40,7 @@ typedef NS_ENUM(NSInteger, RNPFAssetCountType) {
 + (NSDictionary *)PHAssetBurstSelectionTypeValuesReversed;
 + (NSDictionary *)PHAssetSourceTypeValuesReversed;
 + (NSDictionary *)PHAssetCollectionTypeValuesReversed;
-+ (NSDictionary *)PHAssetCollectionSubtypeValuesReversed;
++ (NSDictionary *)RNPFAssetCollectionSubtypeValuesReversed;
 + (NSDictionary *)PHAuthorizationStatusValuesReversed;
 + (NSDictionary *)PHAssetResourceTypeValuesReversed;
 
