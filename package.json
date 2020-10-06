@@ -32,7 +32,7 @@
     "README.md",
     "install.js",
     "event-emitter.js",
-    "react-native-photos-framework.podspec"
+    "RNPhotosFramework.podspec"
   ],
   "scripts": {
     "test": "jest",
