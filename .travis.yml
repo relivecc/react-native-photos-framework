@@ -3,6 +3,7 @@ language: objective-c
 osx_image: xcode8.2
 
 install:
+  - nvm install 6.9.1
   - nvm use 6.9.1
   - wget https://github.com/yarnpkg/yarn/releases/download/v0.18.1/yarn-0.18.1.js
   - export yarn="node $(pwd)/yarn-0.18.1.js"
