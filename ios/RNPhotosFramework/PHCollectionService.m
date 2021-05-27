@@ -138,7 +138,7 @@ static id ObjectOrNull(id object)
         PHAssetCollection *phAssetCollection = (PHAssetCollection *)collection;
         PHAssetCollectionType albumType = [phAssetCollection assetCollectionType];
         PHAssetCollectionSubtype subType = [phAssetCollection assetCollectionSubtype];
-        [albumDictionary setObject:[[RCTConvert PHAssetCollectionTypeValuesReversed] objectForKey:@(albumType)] forKey:@"type"];
+        [albumDictionary setObject:ObjectOrNull([[RCTConvert PHAssetCollectionTypeValuesReversed] objectForKey:@(albumType)]) forKey:@"type"];
         if(subType == 1000000201) {
             //Some kind of undocumented value here for recentlyDeleted
             //Found references to this when i Googled.
