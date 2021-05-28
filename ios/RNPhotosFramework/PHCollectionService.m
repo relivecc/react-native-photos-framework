@@ -98,7 +98,7 @@ static id ObjectOrNull(id object)
     int numberOfPreviewAssets = [RCTConvert int:params[@"previewAssets"]];
     BOOL includeMetadata = [RCTConvert BOOL:params[@"includeMetadata"]];
     BOOL includeResourcesMetadata = [RCTConvert BOOL:params[@"includeResourcesMetadata"]];
-    BOOL toggleAlbumTypeFix = [RCTConvert BOOL:params[@"toggleAlbumTypeFix"]];
+    BOOL albumTypeFix = [RCTConvert BOOL:params[@"albumTypeFix"]];
 
     NSMutableDictionary *collectionDictionary = [NSMutableDictionary new];
     NSMutableArray *albumsArray = [NSMutableArray arrayWithCapacity:albums.count];
@@ -121,7 +121,7 @@ static id ObjectOrNull(id object)
 
     for(PHCollection *collection in albums)
     {
-        NSMutableDictionary *albumDictionary = [self generateAlbumResponseFromCollection:collection numberOfPreviewAssets:numberOfPreviewAssets countType:countType includeMetadata:includeMetadata includeResourcesMetadata:includeResourcesMetadata cacheAssets:cacheAssets assetFetchParams:assetFetchParams toggleAlbumTypeFix:toggleAlbumTypeFix];
+        NSMutableDictionary *albumDictionary = [self generateAlbumResponseFromCollection:collection numberOfPreviewAssets:numberOfPreviewAssets countType:countType includeMetadata:includeMetadata includeResourcesMetadata:includeResourcesMetadata cacheAssets:cacheAssets assetFetchParams:assetFetchParams albumTypeFix:albumTypeFix];
         
         [albumsArray addObject:albumDictionary];
         
@@ -130,7 +130,7 @@ static id ObjectOrNull(id object)
     return collectionDictionary;
 }
 
-+ (NSMutableDictionary *)generateAlbumResponseFromCollection:(PHCollection *)collection numberOfPreviewAssets:(int)numberOfPreviewAssets countType:(RNPFAssetCountType)countType includeMetadata:(BOOL)includeMetadata includeResourcesMetadata:(BOOL)resourcesMetadata cacheAssets:(BOOL)cacheAssets assetFetchParams:(NSDictionary *)assetFetchParams toggleAlbumTypeFix:(BOOL)toggleAlbumTypeFix{
++ (NSMutableDictionary *)generateAlbumResponseFromCollection:(PHCollection *)collection numberOfPreviewAssets:(int)numberOfPreviewAssets countType:(RNPFAssetCountType)countType includeMetadata:(BOOL)includeMetadata includeResourcesMetadata:(BOOL)resourcesMetadata cacheAssets:(BOOL)cacheAssets assetFetchParams:(NSDictionary *)assetFetchParams albumTypeFix:(BOOL)albumTypeFix{
     
     NSMutableDictionary *albumDictionary = [NSMutableDictionary new];
 
@@ -138,7 +138,7 @@ static id ObjectOrNull(id object)
         PHAssetCollection *phAssetCollection = (PHAssetCollection *)collection;
         PHAssetCollectionType albumType = [phAssetCollection assetCollectionType];
         PHAssetCollectionSubtype subType = [phAssetCollection assetCollectionSubtype];
-        [albumDictionary setObject: toggleAlbumTypeFix 
+        [albumDictionary setObject: albumTypeFix 
             ? ObjectOrNull([[RCTConvert PHAssetCollectionTypeValuesReversed] objectForKey:@(albumType)]) 
             : [[RCTConvert PHAssetCollectionTypeValuesReversed] objectForKey:@(albumType)] forKey:@"type"];
         if(subType == 1000000201) {
