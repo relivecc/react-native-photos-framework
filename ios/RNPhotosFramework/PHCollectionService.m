@@ -118,7 +118,6 @@ static id ObjectOrNull(id object)
     if(fetchOptions) {
         [assetFetchParams setObject:fetchOptions forKey:@"fetchOptions"];
     }
-    BOOL toggleAlbumTypeFix = [RCTConvert BOOL:params[@"toggleAlbumTypeFix"]];
 
     for(PHCollection *collection in albums)
     {
